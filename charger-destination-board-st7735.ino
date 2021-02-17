@@ -4,7 +4,7 @@
 
 const char voltage[] PROGMEM = "";
 const char runtime[] PROGMEM = "";
-const char pere_marquette[] PROGMEM = "PERE MARQUETTE";
+const char pere_marquette[] PROGMEM = "370 PERE MARQUETTE";
 const char grand_rapids[] PROGMEM = "GRAND RAPIDS";
 const char chicago[] PROGMEM = "CHICAGO";
 const char illinois_zephyr[] PROGMEM = "ILLINOIS ZEPHYR";
@@ -86,7 +86,7 @@ void printMessage(bool findWidth) {
   }
 
   if (findWidth) {
-    scrolling = messageWidth > 43 && !disableScrolling;
+    scrolling = messageWidth > (boardWidth - 6) && !disableScrolling;
   }
   if (!scrolling) {
     display.shiftImage(((boardWidth - messageWidth) / 2) - 2);

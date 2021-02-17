@@ -13,10 +13,10 @@
 #define dc   2
 
 const int TOP_LEFT_CORNER[] = {10, 8};
-const int boardWidth = 49;
-const int boardHeight = 13;
-const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth, TOP_LEFT_CORNER[1] + boardHeight};
-char image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
+const int boardWidth = 78;
+const int boardHeight = 17;
+const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
+byte image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
 const int BLACK = 0xFFFF;
 const int AMBER = 0xF800;
 
