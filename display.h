@@ -2,7 +2,7 @@
 #define display_h
 
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1331.h>
+#include <Adafruit_ST7735.h>
 #include <SPI.h>
 #include <limits.h>
 
@@ -12,13 +12,13 @@
 #define rst  3
 #define dc   2
 
-const int TOP_LEFT_CORNER[] = {1, 1};
-const int BOTTOM_RIGHT_CORNER[] = {49, 14};
+const int TOP_LEFT_CORNER[] = {2, 1};
+const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + 64, TOP_LEFT_CORNER[1] + 13};
 const int boardWidth = BOTTOM_RIGHT_CORNER[0] - TOP_LEFT_CORNER[0] + 1;
 const int boardHeight = BOTTOM_RIGHT_CORNER[1] - TOP_LEFT_CORNER[1] + 1;
 char image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
-const int BLACK = 0x000000;
-const int AMBER = 0xFFB400;
+const int BLACK = 0xFFFF;
+const int AMBER = 0xF800;
 
 class Display {
   public:
@@ -36,11 +36,11 @@ class Display {
     clearDestinationBoard();
     drawImage();
   private:
-    static Adafruit_SSD1331 display;
+    static Adafruit_ST7735 display;
     static bool running;
 };
 
-Adafruit_SSD1331 Display::display = Adafruit_SSD1331(&SPI, cs, dc, rst);
+Adafruit_ST7735 Display::display = Adafruit_ST7735(&SPI, cs, dc, rst);
 bool Display::running = false;
 
 Display::begin() {
@@ -52,10 +52,11 @@ Display::begin() {
         }
       }
     }
-    display.begin();
+    display.initR(INITR_MINI160x80);
+    display.setRotation(3);
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-    fillScreen(0x0);
-//    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 2, BOTTOM_RIGHT_CORNER[1] + 2, AMBER);
+    fillScreen(BLACK);
+    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 2, BOTTOM_RIGHT_CORNER[1] + 2, AMBER);
     running = true;
   }
 };
