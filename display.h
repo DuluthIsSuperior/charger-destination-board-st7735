@@ -12,10 +12,10 @@
 #define rst  3
 #define dc   2
 
-const int TOP_LEFT_CORNER[] = {2, 1};
-const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + 64, TOP_LEFT_CORNER[1] + 13};
-const int boardWidth = BOTTOM_RIGHT_CORNER[0] - TOP_LEFT_CORNER[0] + 1;
-const int boardHeight = BOTTOM_RIGHT_CORNER[1] - TOP_LEFT_CORNER[1] + 1;
+const int TOP_LEFT_CORNER[] = {10, 8};
+const int boardWidth = 49;
+const int boardHeight = 13;
+const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth, TOP_LEFT_CORNER[1] + boardHeight};
 char image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
 const int BLACK = 0xFFFF;
 const int AMBER = 0xF800;
@@ -32,7 +32,6 @@ class Display {
     printText(char* str);
     fillRect(int startX, int startY, int endX, int endY, int color);
     drawRect(int startX, int startY, int endX, int endY, int color);
-    fillScreen(int color);
     clearDestinationBoard();
     drawImage();
   private:
@@ -55,8 +54,8 @@ Display::begin() {
     display.initR(INITR_MINI160x80);
     display.setRotation(3);
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-    fillScreen(BLACK);
-    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 2, BOTTOM_RIGHT_CORNER[1] + 2, AMBER);
+    display.fillScreen(BLACK);
+    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 1, BOTTOM_RIGHT_CORNER[1] + 1, 0xF00F);
     running = true;
   }
 };
@@ -66,17 +65,16 @@ bool withinBounds(int x, int y) {
 }
 
 Display::drawPixel(int x, int y, int color) {
-  if (x < boardWidth && x >= 0 && y < boardHeight && y >= 0) {
-    if (color == BLACK && withinBounds(x, y) && image[x][y] != 0 && image[x][y] != 2) {
+  if (withinBounds(x, y)) {
+    if (color == BLACK && image[x][y] != 0 && image[x][y] != 2) {
       image[x][y] = 2;
-    } else if (color == AMBER && withinBounds(x, y)) {
+    } else if (color == AMBER) {
       image[x][y] = 3;
     }
   }
 }
 
 Display::shiftImage(int x) {
-  int c = 0;
   for (int xx = boardWidth - 1 - x; xx >= 1; xx--) {
     for (int yy = 1; yy < boardHeight; yy++) {
       drawPixel(xx + x, yy, image[xx][yy] == 3 ? AMBER : BLACK);
@@ -86,10 +84,6 @@ Display::shiftImage(int x) {
 }
 
 Display::drawLine(int startX, int startY, int endX, int endY, int color) {
-  startX += TOP_LEFT_CORNER[0];
-  startY += TOP_LEFT_CORNER[1];
-  endX   += TOP_LEFT_CORNER[0];
-  endY   += TOP_LEFT_CORNER[1];
   if (startX > endX) {
     int temp = startX;
     startX = endX;
@@ -132,13 +126,12 @@ Display::printText(char* str) {
   display.print(str);
 };
 
-Display::drawRect(int startX, int startY, int endX, int endY, int color) {
-  display.drawRect(startX, startY, endX, endY, color);
-};
-
-Display::fillScreen(int color) {
-  display.fillScreen(color);
-};
+Display::drawRect(int x1, int y1, int x2, int y2, int color) {
+  display.drawLine(x1, y1, x2, y1, color);
+  display.drawLine(x2, y1, x2, y2, color);
+  display.drawLine(x2, y2, x1, y2, color);
+  display.drawLine(x1, y2, x1, y1, color);
+}
 
 Display::drawImage() {
   for (int x = 0; x < boardWidth; x++) {
