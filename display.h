@@ -64,12 +64,20 @@ bool withinBounds(int x, int y) {
   return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
 }
 
+int getValue(byte b, int shift) {
+  int value = (b >> shift + 1) & 1 ? 2 : 0;
+  value += (b >> shift) & 1 ? 1 : 0;
+  return value;
+}
+
 Display::drawPixel(int x, int y, int color) {
   if (withinBounds(x, y)) {
-    if (color == BLACK && image[x][y] != 0 && image[x][y] != 2) {
-      image[x][y] = 2;
+    int value = getValue(image[x][y], 0);
+    if (color == BLACK && value != 0 && value != 2) {
+      image[x][y] &= ~(3u << 0);
+      image[x][y] |= 2u << 0;
     } else if (color == AMBER) {
-      image[x][y] = 3;
+      image[x][y] |= 3u << 0;
     }
   }
 }
@@ -136,12 +144,14 @@ Display::drawRect(int x1, int y1, int x2, int y2, int color) {
 Display::drawImage() {
   for (int x = 0; x < boardWidth; x++) {
     for (int y = 0; y < boardHeight; y++) {
-      if (image[x][y] == 2 || image[x][y] == 1) {
+      int value = getValue(image[x][y], 0);
+      if (value == 2 || value == 1) {
         display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, BLACK);
-        image[x][y] = 0;
-      } else if (image[x][y] == 3) {
+        image[x][y] &= ~(3u << 0);
+      } else if (value == 3) {
         display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, AMBER);
-        image[x][y] = 1;
+        image[x][y] &= ~(3u << 0);
+        image[x][y] |= 1u << 0;
       }
     }
   }
