@@ -13,7 +13,7 @@ const int TOP_LEFT_CORNER[] = {54, 8};
 const int boardWidth = 80;
 const int boardHeight = 17;
 const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
-byte image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
+byte image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using byte since it's shorter than an int)
 // different screens with the same driver produce different output - your mileage may vary
 const int BLACK = 0x0000;
 const int AMBER = 0x0CDF; // BGR?

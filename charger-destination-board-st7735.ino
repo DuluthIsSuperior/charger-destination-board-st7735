@@ -71,7 +71,8 @@ void printMessage(bool findWidth) {
     if (str[i] != 0) {
       int index = char_map.getCharacterData(str[i]);
       int numberOfLines = pgm_read_word(&characterData[index + 1]);
-      int offset = charsToIntValue(4, index + 3, index + 4, index + 5, index + 6);
+      int offset = pgm_read_word(&characterData[index + 3]) * 100;
+      offset += pgm_read_word(&characterData[index + 4]);
       for (int i = 0; i < numberOfLines; i++) {
         int line[4] = {pgm_read_word(&lineData[offset + 0]), pgm_read_word(&lineData[offset + 1]), pgm_read_word(&lineData[offset + 2]), pgm_read_word(&lineData[offset + 3])};
         display.drawLine(line[0] + tempX, line[1] + y, line[2] + tempX, line[3] + y, AMBER);
