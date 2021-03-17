@@ -21,7 +21,7 @@ bool old_A0 = false;          // stores the old status of
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
 int x = 2;                    // top-left x coordinate of the message in the destination board
-int y = 3;                    // top-left x coordinate of the message in the destination board
+int y = 5;                    // top-left x coordinate of the message in the destination board
 struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
@@ -30,6 +30,8 @@ int messageId = 1;            // index of the message in destinations[] that is 
 
 void setup() {
   Serial.begin(9600);
+  while (!Serial) {}
+  Serial.println("Serial established");
   pinMode(A0, INPUT);
   pinMode(A1, INPUT);
   display.begin();
@@ -99,12 +101,14 @@ bool isStatus(int messageId) {
   return messageId >= 0 && messageId <= 1;
 }
 
+int i = 0;
 void loop() {
+//  Serial.println(++i);
   if (messageChanged) {
     if (!isStatus(messageId)) {
       x = 2;
       memset(str, 0, sizeof(str));  // zeros out the string
-      strncpy_P(str, pgm_read_word(&destinations[messageId]), 50);
+      strncpy_P(str, pgm_read_word(&destinations[messageId]), 50);  // doesn't work for some reason
       printMessage(true);
     }
     messageChanged = false;

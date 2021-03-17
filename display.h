@@ -6,19 +6,17 @@
 #include <SPI.h>
 #include <limits.h>
 
-#define sclk 13
-#define mosi 11
 #define cs   4
 #define rst  3
 #define dc   2
-
-const int TOP_LEFT_CORNER[] = {10, 8};
-const int boardWidth = 78;
+const int TOP_LEFT_CORNER[] = {54, 8};
+const int boardWidth = 80;
 const int boardHeight = 17;
 const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
 byte image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using char since it's shorter than an int)
-const int BLACK = 0xFFFF;
-const int AMBER = 0xF800;
+// different screens with the same driver produce different output - your mileage may vary
+const int BLACK = 0x0000;
+const int AMBER = 0x0CDF; // BGR?
 
 class Display {
   public:
@@ -52,10 +50,10 @@ Display::begin() {
       }
     }
     display.initR(INITR_MINI160x80);
-    display.setRotation(3);
+    display.setRotation(1);
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
     display.fillScreen(BLACK);
-    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 1, BOTTOM_RIGHT_CORNER[1] + 1, 0xF00F);
+    drawRect(TOP_LEFT_CORNER[0] - 1, TOP_LEFT_CORNER[1] - 1, BOTTOM_RIGHT_CORNER[0] + 1, BOTTOM_RIGHT_CORNER[1] + 1, AMBER);
     running = true;
   }
 };
