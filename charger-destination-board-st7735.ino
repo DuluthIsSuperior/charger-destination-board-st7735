@@ -70,14 +70,14 @@ void printMessage(bool findWidth) {
   for (int i = 0; i < sizeof(str) / sizeof(char) - 1; i++) {
     if (str[i] != 0) {
       int index = char_map.getCharacterData(str[i]);
-      int numberOfLines = ((int) pgm_read_word(&characterData[index + 1]));
+      int numberOfLines = pgm_read_word(&characterData[index + 1]);
       int offset = charsToIntValue(4, index + 3, index + 4, index + 5, index + 6);
       for (int i = 0; i < numberOfLines; i++) {
         int line[4] = {pgm_read_word(&lineData[offset + 0]), pgm_read_word(&lineData[offset + 1]), pgm_read_word(&lineData[offset + 2]), pgm_read_word(&lineData[offset + 3])};
         display.drawLine(line[0] + tempX, line[1] + y, line[2] + tempX, line[3] + y, AMBER);
         offset += 4;
       }
-      int add = charsToIntValue(1, index + 2) + 1;  // read value for width of character, then add 1 for spacing between characters
+      int add = pgm_read_word(&characterData[index + 2]) + 1;  // read value for width of character, then add 1 for spacing between characters
       tempX += add;
       if (findWidth) {
         messageWidth += add;
