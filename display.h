@@ -89,31 +89,50 @@ Display::shiftImage(int x) {
   }
 }
 
-Display::drawLine(int startX, int startY, int endX, int endY, int color) {
-  if (startX > endX) {
-    int temp = startX;
-    startX = endX;
-    endX = temp;
+/**
+ * Used to draw a line onto the screen
+ * Source: http://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
+ * Parameters:
+ * startX, startY - starting X and Y coordinates respectively
+ * endX, endY - ending X and Y coordinates respectively
+ * color - color to draw the pixel as (only amber or black are supported at the moment)
+ */
+Display::drawLine(int x0, int y0, int x1, int y1, int color) {
+  int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
+  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
+  int err = (dx>dy ? dx : -dy)/2, e2;
+ 
+  for(;;){
+    drawPixel(x0,y0,color);
+    if (x0==x1 && y0==y1) break;
+    e2 = err;
+    if (e2 >-dx) { err -= dy; x0 += sx; }
+    if (e2 < dy) { err += dx; y0 += sy; }
   }
-  if (startY > endY) {
-    int temp = startY;
-    startY = endY;
-    endY = temp;
-  }
-  bool isYEqual = startY == endY;
-  bool isXEqual = startX == endX;
-  if (!isXEqual && !isYEqual) {
-    setCursor(0, 16);
-    setTextColor(0xFF000);
-    setTextSize(1);
-    printText("ERROR: UNEXPECTED DRAW");
-  } else {
-    int *ptr = isYEqual ? &startX : &startY;  // stores a pointer to the variable whether it needs to draw vertically (chooses x) or horizontally (chooses y)
-    int end = isYEqual ? endX : endY;
-    for (; *ptr <= end; (*ptr)++) {
-      drawPixel(startX, startY, color);
-    }
-  }
+//  if (startX > endX) {
+//    int temp = startX;
+//    startX = endX;
+//    endX = temp;
+//  }
+//  if (startY > endY) {
+//    int temp = startY;
+//    startY = endY;
+//    endY = temp;
+//  }
+//  bool isYEqual = startY == endY;
+//  bool isXEqual = startX == endX;
+//  if (!isXEqual && !isYEqual) {
+//    setCursor(0, 16);
+//    setTextColor(0xFF000);
+//    setTextSize(1);
+//    printText("ERROR: UNEXPECTED DRAW");
+//  } else {
+//    int *ptr = isYEqual ? &startX : &startY;  // stores a pointer to the variable whether it needs to draw vertically (chooses x) or horizontally (chooses y)
+//    int end = isYEqual ? endX : endY;
+//    for (; *ptr <= end; (*ptr)++) {
+//      drawPixel(startX, startY, color);
+//    }
+//  }
 };
 
 Display::setCursor(int x, int y) {
