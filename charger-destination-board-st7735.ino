@@ -4,7 +4,7 @@
 
 const char voltage[] PROGMEM = "";
 const char runtime[] PROGMEM = "";
-const char pere_marquette[] PROGMEM = "370 PERE MARQUETTE";
+const char pere_marquette[] PROGMEM = "KMNQRVWXYZ24"; //"370 PERE MARQUETTE";
 const char grand_rapids[] PROGMEM = "GRAND RAPIDS";
 const char chicago[] PROGMEM = "CHICAGO";
 const char illinois_zephyr[] PROGMEM = "ILLINOIS ZEPHYR";
@@ -26,7 +26,7 @@ struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
 long startUp = millis();
-int messageId = 1;            // index of the message in destinations[] that is currently being displayed
+int messageId = 2;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
   Serial.begin(9600);
@@ -70,7 +70,9 @@ void printMessage(bool findWidth) {
   for (int i = 0; i < sizeof(str) / sizeof(char) - 1; i++) {
     if (str[i] != 0) {
       int index = char_map.getCharacterData(str[i]);
-      int numberOfLines = charsToIntValue(2, index + 1, index + 2);
+      int numberOfLines = charsToIntValue(1, index + 1) * 10;
+      numberOfLines += (int) pgm_read_word(&characterData[index + 2]);
+//      int numberOfLines = charsToIntValue(2, index + 1, index + 2);
       int offset = charsToIntValue(4, index + 4, index + 5, index + 6, index + 7);
       for (int i = 0; i < numberOfLines; i++) {
         int line[4] = {pgm_read_word(&lineData[offset + 0]), pgm_read_word(&lineData[offset + 1]), pgm_read_word(&lineData[offset + 2]), pgm_read_word(&lineData[offset + 3])};
