@@ -17,7 +17,7 @@ const char *const destinations[] PROGMEM = {voltage, runtime, pere_marquette, gr
 bool scrolling = true;        // dictates whether the message inside the destination board scrolls
 bool disableScrolling = true;
 bool messageChanged = true;   // initalized to true to let the message initially show up
-bool old_A0 = false;          // stores the old status of
+//bool old_A0 = false;          // stores the old status of
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
 int x = 2;                    // top-left x coordinate of the message in the destination board
@@ -33,7 +33,8 @@ void setup() {
   while (!Serial) {}
   Serial.println("Serial established");
   pinMode(A0, INPUT);
-  pinMode(A1, INPUT);
+  pinMode(5, INPUT);
+//  pinMode(A1, INPUT);
   display.begin();
 }
 
@@ -102,9 +103,8 @@ bool isStatus(int messageId) {
   return messageId >= 0 && messageId <= 1;
 }
 
-int i = 0;
+bool old5 = digitalRead(5) == HIGH;
 void loop() {
-//  Serial.println(++i);
   if (messageChanged) {
     if (!isStatus(messageId)) {
       x = 2;
@@ -152,16 +152,14 @@ void loop() {
   } else {
     disableScrolling = false;
   }
-  if (digitalRead(A0) == HIGH) {  // if using a button to test this, no code accounts for the button bounce problem
-    if (!old_A0) {
-      messageId++;
-      if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
-        messageId = 0;
-      }
-      messageChanged = true;
-      old_A0 = true;
+  bool current5 = digitalRead(5) == HIGH;
+  Serial.println(current5);
+  if (current5 != old5) {
+    messageId++;
+    if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
+      messageId = 0;
     }
-  } else {
-    old_A0 = false;
+    messageChanged = true;
+    old5 = current5;
   }
 }
