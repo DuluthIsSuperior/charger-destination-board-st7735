@@ -18,7 +18,7 @@ const int boardWidth = 80;  // prototypically 144 - model is 10.25mm
 const int boardHeight = 17; // prototypically 28 - model is 3mm
 // prototypical ratio = 144 / 28 = 36 / 7 = 36:7
 const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
-BitArray render[boardHeight];
+BitArray render[boardHeight];   // [y].get(x): 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using byte since it's shorter than an int)
 
 // different screens with the same driver produce different output - your mileage may vary
 const int BLACK = 0x0000;
