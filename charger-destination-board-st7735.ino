@@ -4,7 +4,7 @@
 
 const char voltage[] PROGMEM = "";
 const char runtime[] PROGMEM = "";
-const char pere_marquette[] PROGMEM = "KMNQRVWXYZ24"; //"370 PERE MARQUETTE";
+const char pere_marquette[] PROGMEM = "370 PERE MARQUETTE";
 const char grand_rapids[] PROGMEM = "GRAND RAPIDS";
 const char chicago[] PROGMEM = "CHICAGO";
 const char illinois_zephyr[] PROGMEM = "ILLINOIS ZEPHYR";
@@ -14,10 +14,12 @@ const char wolverine[] PROGMEM = "WOLVERINE";
 
 const char *const destinations[] PROGMEM = {voltage, runtime, pere_marquette, grand_rapids, chicago, illinois_zephyr, blue_water, grvmrc, wolverine};
 
+const char voltage_format[] PROGMEM = "%s%d.%02dV";
+const char runtime_format[] PROGMEM = "%d:%s%d:%s%d:%s%d";
+
 bool scrolling = true;        // dictates whether the message inside the destination board scrolls
 bool disableScrolling = true;
 bool messageChanged = true;   // initalized to true to let the message initially show up
-//bool old_A0 = false;          // stores the old status of
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
 int x = 2;                    // top-left x coordinate of the message in the destination board
@@ -26,40 +28,19 @@ struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
 long startUp = millis();
-int messageId = 2;            // index of the message in destinations[] that is currently being displayed
+int messageId = 1;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
   Serial.begin(9600);
   while (!Serial) {}
-  Serial.println("Serial established");
+  Serial.println(F("Serial established"));
   pinMode(A0, INPUT);
   pinMode(5, INPUT);
-//  pinMode(A1, INPUT);
   display.begin();
 }
 
 int power(int x, int y) {
   return y == 0 ? 1 : x * power(x, y - 1);  // this is here because I'm having problems with the pow function in the math library
-}
-
-/**
-   Returns the characters converted to one integer given the index for the characterData array
-   argc - the number of arguments this function expects to see
-   ... - chars to conver to integers from left to right
-*/
-int charsToIntValue(int argc, ...) {
-  va_list argp;           // store pointer to varargs list
-  va_start(argp, argc);   // initalize varargs list with pointer and the last non-varargs argument in this method
-  int multiplier = power(10, argc - 1);
-  int result = 0;
-  for (int i = 0; i < argc; i++) {
-    int index = va_arg(argp, int);
-    char c = pgm_read_word(&characterData[index]);
-    result += (c - 48) * multiplier;
-    multiplier /= 10;
-  }
-  va_end(argp);
-  return result;
 }
 
 void printMessage(bool findWidth) {
@@ -103,7 +84,16 @@ bool isStatus(int messageId) {
   return messageId >= 0 && messageId <= 1;
 }
 
+void changeMessage() {
+  messageId++;
+  if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
+    messageId = 0;
+  }
+  messageChanged = true;
+}
+
 bool old5 = digitalRead(5) == HIGH;
+int zeroCount = 0;
 void loop() {
   if (messageChanged) {
     if (!isStatus(messageId)) {
@@ -113,8 +103,9 @@ void loop() {
       printMessage(true);
     }
     messageChanged = false;
-    Serial.println(messageId);
+  //    Serial.println(messageId);
   }
+  
   if (scrolling && millis() - lastMoved >= 60) {
     if (x < -messageWidth) {
       x = BOTTOM_RIGHT_CORNER[0] + 3;
@@ -131,7 +122,7 @@ void loop() {
     float R2 = 22000.00;
     float voltage = value * (5.0 / 1024) * ((R1 + R2) / R2);
     memset(str, 0, 8);  // zeros out the string
-    sprintf(str, "%s%d.%02dV", (voltage < 10.00 ? "0" : ""), (int) voltage, (int) (voltage * 100.0) % 100);
+    sprintf_P(str, voltage_format, (voltage < 10.00 ? "0" : ""), (int) voltage, (int) (voltage * 100.0) % 100);
     x = 2;
     printMessage(true);
     lastMeasured = millis();
@@ -144,7 +135,7 @@ void loop() {
     int minutes = (time / 60000) % 60;
     int seconds = (time / 1000) % 60;
     memset(str, 0, sizeof(str));
-    sprintf(str, "%d:%s%d:%s%d:%s%d", days, hours < 10 ? "0" : "", hours, minutes < 10 ? "0" : "", minutes, seconds < 10 ? "0" : "", seconds);
+    sprintf_P(str, runtime_format, days, hours < 10 ? "0" : "", hours, minutes < 10 ? "0" : "", minutes, seconds < 10 ? "0" : "", seconds); // _P functions let us provide direct pointers to flash memory
     x = 2;
     printMessage(true);
     lastMeasured = millis();
@@ -153,13 +144,29 @@ void loop() {
     disableScrolling = false;
   }
   bool current5 = digitalRead(5) == HIGH;
-  Serial.println(current5);
-  if (current5 != old5) {
-    messageId++;
-    if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
-      messageId = 0;
-    }
-    messageChanged = true;
-    old5 = current5;
-  }
+  //  if (current5) {
+  //    Serial.print(1);
+  //  } else {
+  //    Serial.print(0);
+  //  }
+  //  if (++zeroCount == 100) {
+  //    Serial.println();
+  //    zeroCount = 0;
+  //  }
+
+  // advance to the next message if function is toggled from the decoder
+  // if (current5 && !old5) {
+  //   // HIGH if F3 on decoder is off
+  //   old5 = true;
+  //   changeMessage();
+  //   Serial.println(zeroCount);
+  //   zeroCount = 0;
+  // } else if (!current5) {
+  //   // 1M pulls signal down properly
+  //   zeroCount++;
+  //   if (old5 && zeroCount > 2000) {
+  //     old5 = false;
+  //     changeMessage();
+  //   }
+  // }
 }
