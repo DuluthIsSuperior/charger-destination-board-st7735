@@ -94,6 +94,9 @@ const char *const characterData[LENGTH_OF_CHAR_DATA * NUMBER_OF_SYMBOLS] PROGMEM
    ':', 2,1, 6,84,  // X
 };
 
+const char error[] PROGMEM = "ERROR";
+const char message[] PROGMEM = "UNKNOWN CHAR";
+
 struct Map {
   int getCharacterData(char character) {
     for (int i = 0; i < sizeof(characterData) / sizeof(char*); i += LENGTH_OF_CHAR_DATA) {
@@ -101,12 +104,15 @@ struct Map {
         return i;
       }
     }
-    display.setCursor(0, 18);
+    display.setCursor(0, 23);
     display.setTextColor(0xFF000);
     display.setTextSize(1);
-    display.printText("ERROR");
-    display.setCursor(0, 26);
-    display.printText("UNKNOWN CHAR");
-    return 716;
+    char str[13];
+    strcpy_P(str, error);
+    display.printText(str);
+    display.setCursor(0, 31);
+    strcpy_P(str, message);
+    display.printText(str);
+    return 632;
   }
 };
