@@ -18,7 +18,7 @@ const char voltage_format[] PROGMEM = "%s%d.%02dV";
 const char runtime_format[] PROGMEM = "%d:%s%d:%s%d:%s%d";
 
 bool scrolling = true;        // dictates whether the message inside the destination board scrolls
-bool disableScrolling = true;
+bool disableScrolling = true; // if debugging with messageId != 1, then set this to false
 bool messageChanged = true;   // initalized to true to let the message initially show up
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
