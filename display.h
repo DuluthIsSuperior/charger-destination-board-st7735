@@ -6,6 +6,8 @@
 #include <SPI.h>
 #include <limits.h>
 
+#include "BitArray.h"
+
 #define cs   4
 #define rst  3
 #define dc   2
@@ -16,7 +18,8 @@ const int boardWidth = 80;  // prototypically 144 - model is 10.25mm
 const int boardHeight = 17; // prototypically 28 - model is 3mm
 // prototypical ratio = 144 / 28 = 36 / 7 = 36:7
 const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
-byte image[boardWidth][boardHeight]; // [x][y]: 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using byte since it's shorter than an int)
+BitArray render[boardHeight];
+
 // different screens with the same driver produce different output - your mileage may vary
 const int BLACK = 0x0000;
 const int AMBER = 0x0CDF; // BGR?
@@ -45,13 +48,16 @@ bool Display::running = false;
 
 Display::begin() {
   if (!running) {
-    for (int x = 0; x < boardWidth; x++) {
       for (int y = 0; y < boardHeight; y++) {
-        if (image[x][y] == 1) {
-          image[x][y] = 0;
+        int renderStatus = render[y].begin(2, boardWidth);
+        if (renderStatus == BA_NO_MEMORY_ERR) {
+            Serial.println("No memory left");
+            for(;;);    // suspend program
         }
+
+        render[y].clear();
       }
-    }
+
     display.initR(INITR_MINI160x80);
     display.setRotation(1);
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
@@ -65,20 +71,13 @@ bool withinBounds(int x, int y) {
   return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
 }
 
-int getValue(byte b, int shift) {
-  int value = (b >> shift + 1) & 1 ? 2 : 0;
-  value += (b >> shift) & 1 ? 1 : 0;
-  return value;
-}
-
 Display::drawPixel(int x, int y, int color) {
   if (withinBounds(x, y)) {
-    int value = getValue(image[x][y], 0);
+    byte value = render[y].get(x);
     if (color == BLACK && value != 0 && value != 2) {
-      image[x][y] &= ~(3u << 0);
-      image[x][y] |= 2u << 0;
+        render[y].set(x, 2);
     } else if (color == AMBER) {
-      image[x][y] |= 3u << 0;
+        render[y].set(x, 3);
     }
   }
 }
@@ -86,7 +85,8 @@ Display::drawPixel(int x, int y, int color) {
 Display::shiftImage(int x) {
   for (int xx = boardWidth - 1 - x; xx >= 1; xx--) {
     for (int yy = 1; yy < boardHeight; yy++) {
-      drawPixel(xx + x, yy, image[xx][yy] == 3 ? AMBER : BLACK);
+        byte value = render[yy].get(xx);
+      drawPixel(xx + x, yy, value == 3 ? AMBER : BLACK);
       drawPixel(xx, yy, BLACK);
     }
   }
@@ -149,14 +149,13 @@ Display::drawRect(int x1, int y1, int x2, int y2, int color) {
 Display::drawImage() {
   for (int x = 0; x < boardWidth; x++) {
     for (int y = 0; y < boardHeight; y++) {
-      int value = getValue(image[x][y], 0);
+        byte value = render[y].get(x);
       if (value == 2 || value == 1) {
         display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, BLACK);
-        image[x][y] &= ~(3u << 0);
+        render[y].set(x, 0);
       } else if (value == 3) {
         display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, AMBER);
-        image[x][y] &= ~(3u << 0);
-        image[x][y] |= 1u << 0;
+        render[y].set(x, 1);
       }
     }
   }
