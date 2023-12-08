@@ -9,7 +9,9 @@
 #define cs   4
 #define rst  3
 #define dc   2
-const int TOP_LEFT_CORNER[] = {54, 8};
+// connect SCL to D13
+// connect SDA to D11
+const int TOP_LEFT_CORNER[] = {54, 36};
 const int boardWidth = 80;  // prototypically 144 - model is 10.25mm
 const int boardHeight = 17; // prototypically 28 - model is 3mm
 // prototypical ratio = 144 / 28 = 36 / 7 = 36:7
