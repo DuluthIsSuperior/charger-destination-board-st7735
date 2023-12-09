@@ -101,9 +101,11 @@ struct Map {
   int getCharacterData(char character) {
     for (int i = 0; i < sizeof(characterData) / sizeof(char*); i += LENGTH_OF_CHAR_DATA) {
       if (pgm_read_word(&characterData[i]) == character) {
-        return i;
+        return i; // return the index of the character in character data if it's found
       }
     }
+
+    // print unknown character message if the given character was not found in the table
     display.setCursor(0, 23);
     display.setTextColor(0xFF000);
     display.setTextSize(1);
