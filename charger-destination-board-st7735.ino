@@ -16,16 +16,16 @@ const char voltage_format[] PROGMEM = "%s%d.%02dV";
 const char runtime_format[] PROGMEM = "%d:%s%d:%s%d:%s%d";
 
 bool scrolling = true;        // dictates whether the message inside the destination board scrolls
-bool disableScrolling = false; // if debugging with messageId != 1, then set this to false
+bool disableScrolling = true; // if debugging with messageId != 1, then set this to false
 bool messageChanged = true;   // initalized to true to let the message initially show up
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
-int x = 2;                    // top-left x coordinate of the message in the destination board
-int y = 5;                    // top-left x coordinate of the message in the destination board
+int x = 2;                    // top-left x coordinate of the message in the destination board (changes as the message scrolls)
+int y = 5;                    // top-left y coordinate of the message in the destination board (changes as the message scrolls)
 struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
-int messageId = 2;            // index of the message in destinations[] that is currently being displayed
+int messageId = 1;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
   Serial.begin(9600);
@@ -46,8 +46,7 @@ void printMessage(bool findWidth) {
     if (str[i] != 0) {
       int index = char_map.getCharacterData(str[i]);
       int numberOfLines = pgm_read_word(&characterData[index + 1]);
-      int offset = pgm_read_word(&characterData[index + 3]) * 100;
-      offset += pgm_read_word(&characterData[index + 4]);
+      int offset = (pgm_read_word(&characterData[index + 3]) * 100) + pgm_read_word(&characterData[index + 4]);
       for (int i = 0; i < numberOfLines; i++) {
         int line[4] = {pgm_read_word(&lineData[offset + 0]), pgm_read_word(&lineData[offset + 1]), pgm_read_word(&lineData[offset + 2]), pgm_read_word(&lineData[offset + 3])};
         display.drawLine(line[0] + tempX, line[1] + y, line[2] + tempX, line[3] + y, AMBER);
@@ -66,7 +65,7 @@ void printMessage(bool findWidth) {
   if (findWidth) {
     scrolling = messageWidth > (boardWidth - 6) && !disableScrolling;
   }
-  if (!scrolling) {
+  if (!scrolling) { // if scrolling is disabled, center the message inside of the destination board
     display.shiftImage(((boardWidth - messageWidth) / 2) - 2);
   }
   
