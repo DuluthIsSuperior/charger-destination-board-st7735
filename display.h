@@ -24,6 +24,14 @@ const BitArray image; // [y].get(x): 0 = black, 1 = amber, 2 = change to black, 
 const int BLACK = 0x0000;
 const int AMBER = 0x0CDF; // BGR?
 
+bool withinBounds(int x, int y) {
+    return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
+}
+
+int getIndex(int x, int y) {
+    return x + (y * boardWidth);
+}
+
 class Display {
     public:
         begin();
@@ -63,13 +71,28 @@ Display::begin() {
     }
 };
 
-bool withinBounds(int x, int y) {
-    return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
+Display::drawRect(int x1, int y1, int x2, int y2, int color) {
+    display.drawLine(x1, y1, x2, y1, color);
+    display.drawLine(x2, y1, x2, y2, color);
+    display.drawLine(x2, y2, x1, y2, color);
+    display.drawLine(x1, y2, x1, y1, color);
 }
 
-int getIndex(int x, int y) {
-    return x + (y * boardWidth);
-}
+Display::setCursor(int x, int y) {
+    display.setCursor(x, y);
+};
+
+Display::setTextColor(int color) {
+    display.setTextColor(color);
+};
+
+Display::setTextSize(int size) {
+    display.setTextSize(size);
+};
+
+Display::printText(char* str) {
+    display.print(str);
+};
 
 Display::drawPixel(int x, int y, int color) {
     if (withinBounds(x, y)) {
@@ -123,29 +146,6 @@ Display::drawLine(int x0, int y0, int x1, int y1, int color) {
         }
     }
 };
-
-Display::setCursor(int x, int y) {
-    display.setCursor(x, y);
-};
-
-Display::setTextColor(int color) {
-    display.setTextColor(color);
-};
-
-Display::setTextSize(int size) {
-    display.setTextSize(size);
-};
-
-Display::printText(char* str) {
-    display.print(str);
-};
-
-Display::drawRect(int x1, int y1, int x2, int y2, int color) {
-    display.drawLine(x1, y1, x2, y1, color);
-    display.drawLine(x2, y1, x2, y2, color);
-    display.drawLine(x2, y2, x1, y2, color);
-    display.drawLine(x1, y2, x1, y1, color);
-}
 
 Display::drawImage() {
     for (int x = 0; x < boardWidth; x++) {
