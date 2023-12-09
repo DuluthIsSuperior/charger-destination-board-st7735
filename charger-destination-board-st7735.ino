@@ -27,7 +27,6 @@ int y = 5;                    // top-left x coordinate of the message in the des
 struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
-long startUp = millis();
 int messageId = 1;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
@@ -37,10 +36,6 @@ void setup() {
   pinMode(A0, INPUT);
   pinMode(5, INPUT);
   display.begin();
-}
-
-int power(int x, int y) {
-  return y == 0 ? 1 : x * power(x, y - 1);  // this is here because I'm having problems with the pow function in the math library
 }
 
 void printMessage(bool findWidth) {
@@ -129,7 +124,7 @@ void loop() {
     messageChanged = false;
   } else if (messageId == 1 && (messageChanged || millis() - lastMeasured >= 1000)) {
     disableScrolling = true;
-    long time = millis();
+    long time = millis(); // millis always returns the system up time
     int days = (time / 86400000) % 9;
     int hours = (time / 3600000) % 24;
     int minutes = (time / 60000) % 60;
