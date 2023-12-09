@@ -18,7 +18,7 @@ const int boardWidth = 80;  // prototypically 144 - model is 10.25mm
 const int boardHeight = 17; // prototypically 28 - model is 3mm
 // prototypical ratio = 144 / 28 = 36 / 7 = 36:7
 const int BOTTOM_RIGHT_CORNER[] = {TOP_LEFT_CORNER[0] + boardWidth - 1, TOP_LEFT_CORNER[1] + boardHeight - 1};
-BitArray render[boardHeight];   // [y].get(x): 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using byte since it's shorter than an int)
+BitArray image; // [y].get(x): 0 = black, 1 = amber, 2 = change to black, 3 = change to amber (using byte since it's shorter than an int)
 
 // different screens with the same driver produce different output - your mileage may vary
 const int BLACK = 0x0000;
@@ -48,14 +48,10 @@ bool Display::running = false;
 
 Display::begin() {
     if (!running) {
-        for (int y = 0; y < boardHeight; y++) {
-            int renderStatus = render[y].begin(2, boardWidth);
-            if (renderStatus == BA_NO_MEMORY_ERR) {
-                Serial.println("No memory left");
-                for(;;);    // suspend program
-            }
-
-            render[y].clear();
+        int imageStatus = image.begin(2, boardWidth * boardHeight);
+        if (imageStatus == BA_NO_MEMORY_ERR) {
+            Serial.println("No memory left");
+            for(;;);    // suspend program
         }
 
         display.initR(INITR_MINI160x80);
@@ -71,13 +67,18 @@ bool withinBounds(int x, int y) {
     return x >= 0 && x < boardWidth && y >= 0 && y < boardHeight;
 }
 
+int getIndex(int x, int y) {
+    return x + (y * boardWidth);
+}
+
 Display::drawPixel(int x, int y, int color) {
     if (withinBounds(x, y)) {
-        byte value = render[y].get(x);
+        int index = getIndex(x, y);
+        byte value = image.get(index);
         if (color == BLACK && value != 0 && value != 2) {
-            render[y].set(x, 2);
+            image.set(index, 2);
         } else if (color == AMBER) {
-            render[y].set(x, 3);
+            image.set(index, 3);
         }
     }
 }
@@ -85,7 +86,7 @@ Display::drawPixel(int x, int y, int color) {
 Display::shiftImage(int x) {
     for (int xx = boardWidth - 1 - x; xx >= 1; xx--) {
         for (int yy = 1; yy < boardHeight; yy++) {
-            byte value = render[yy].get(xx);
+            byte value = image.get(getIndex(xx, yy));
             drawPixel(xx + x, yy, value == 3 ? AMBER : BLACK);
             drawPixel(xx, yy, BLACK);
         }
@@ -149,13 +150,14 @@ Display::drawRect(int x1, int y1, int x2, int y2, int color) {
 Display::drawImage() {
     for (int x = 0; x < boardWidth; x++) {
         for (int y = 0; y < boardHeight; y++) {
-            byte value = render[y].get(x);
+            int index = getIndex(x, y);
+            byte value = image.get(index);
             if (value == 2 || value == 1) {
                 display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, BLACK);
-                render[y].set(x, 0);
+                image.set(index, 0);
             } else if (value == 3) {
                 display.drawPixel(x + TOP_LEFT_CORNER[0], y + TOP_LEFT_CORNER[1] - 1, AMBER);
-                render[y].set(x, 1);
+                image.set(index, 1);
             }
         }
     }
