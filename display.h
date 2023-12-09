@@ -109,8 +109,7 @@ Display::drawPixel(int x, int y, int color) {
 Display::shiftImage(int x) {
     for (int xx = boardWidth - 1 - x; xx >= 1; xx--) {
         for (int yy = 1; yy < boardHeight; yy++) {
-            byte value = image.get(getIndex(xx, yy));
-            drawPixel(xx + x, yy, value == 3 ? AMBER : BLACK);
+            drawPixel(xx + x, yy, image.get(getIndex(xx, yy)) == 3 ? AMBER : BLACK);
             drawPixel(xx, yy, BLACK);
         }
     }

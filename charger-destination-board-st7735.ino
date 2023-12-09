@@ -28,12 +28,12 @@ long lastMeasured = millis(); // used to keep track of the last time status was 
 int messageId = 1;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
-  Serial.begin(9600);
-  while (!Serial) {}
-  Serial.println(F("Serial established"));
-  pinMode(A0, INPUT);
-  pinMode(5, INPUT);
-  display.begin();
+    Serial.begin(9600);
+    while (!Serial) {}
+    Serial.println(F("Serial established"));
+    pinMode(A0, INPUT);
+    pinMode(5, INPUT);
+    display.begin();
 }
 
 void printMessage(bool findWidth) {
@@ -78,92 +78,94 @@ void printMessage(bool findWidth) {
 }
 
 bool isStatus(int messageId) {
-  return messageId >= 0 && messageId <= 1;
+    return messageId >= 0 && messageId <= 1;
 }
 
 void changeMessage() {
-  messageId++;
-  if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
-    messageId = 0;
-  }
-  messageChanged = true;
+    messageId++;
+    // if the message ID exceeds the size of the messages array, reset it to 0
+    if (messageId % (sizeof(destinations) / sizeof(char*)) == 0) {
+        messageId = 0;
+    }
+    messageChanged = true;
 }
 
 bool old5 = digitalRead(5) == HIGH;
 int zeroCount = 0;
 void loop() {
-  if (messageChanged) {
-    if (!isStatus(messageId)) {
-      x = 2;
-      memset(str, 0, sizeof(str));  // zeros out the string
-      strncpy_P(str, pgm_read_word(&destinations[messageId]), 50);  // doesn't work for some reason
-      printMessage(true);
+    if (messageChanged) {
+        if (!isStatus(messageId)) {
+            x = 2;
+            memset(str, 0, sizeof(str));  // zeros out the string
+            strncpy_P(str, pgm_read_word(&destinations[messageId]), 50);  // doesn't work for some reason
+            printMessage(true);
+        }
+        messageChanged = false;
+        Serial.println(messageId);
     }
-    messageChanged = false;
-  //    Serial.println(messageId);
-  }
-  
-  if (scrolling && millis() - lastMoved >= 60) {
-    if (x < -messageWidth) {
-      x = BOTTOM_RIGHT_CORNER[0] + 3;
-    } else {
-      x--;
-    }
-    printMessage(false);
-    lastMoved = millis();
-  }
-  if (messageId == 0 && (messageChanged || millis() - lastMeasured >= 100)) {
-    disableScrolling = true;
-    int value = analogRead(A1);
-    float R1 = 47000.00;
-    float R2 = 22000.00;
-    float voltage = value * (5.0 / 1024) * ((R1 + R2) / R2);
-    memset(str, 0, 8);  // zeros out the string
-    sprintf_P(str, voltage_format, (voltage < 10.00 ? "0" : ""), (int) voltage, (int) (voltage * 100.0) % 100);
-    x = 2;
-    printMessage(true);
-    lastMeasured = millis();
-    messageChanged = false;
-  } else if (messageId == 1 && (messageChanged || millis() - lastMeasured >= 1000)) {
-    disableScrolling = true;
-    long time = millis(); // millis always returns the system up time
-    int days = (time / 86400000) % 9;
-    int hours = (time / 3600000) % 24;
-    int minutes = (time / 60000) % 60;
-    int seconds = (time / 1000) % 60;
-    memset(str, 0, sizeof(str));
-    sprintf_P(str, runtime_format, days, hours < 10 ? "0" : "", hours, minutes < 10 ? "0" : "", minutes, seconds < 10 ? "0" : "", seconds); // _P functions let us provide direct pointers to flash memory
-    x = 2;
-    printMessage(true);
-    lastMeasured = millis();
-    messageChanged = false;
-  } else {
-    disableScrolling = false;
-  }
-  bool current5 = digitalRead(5) == HIGH;
-  //  if (current5) {
-  //    Serial.print(1);
-  //  } else {
-  //    Serial.print(0);
-  //  }
-  //  if (++zeroCount == 100) {
-  //    Serial.println();
-  //    zeroCount = 0;
-  //  }
 
-  // // advance to the next message if function is toggled from the decoder
-  // if (current5 && !old5) {
-  //   // HIGH if F3 on decoder is off
-  //   old5 = true;
-  //   changeMessage();
-  //   Serial.println(zeroCount);
-  //   zeroCount = 0;
-  // } else if (!current5) {
-  //   // 1M pulls signal down properly
-  //   zeroCount++;
-  //   if (old5 && zeroCount > 2000) {
-  //     old5 = false;
-  //     changeMessage();
-  //   }
-  // }
+    if (scrolling && millis() - lastMoved >= 60) {
+        if (x < -messageWidth) {
+            x = BOTTOM_RIGHT_CORNER[0] + 3;
+        } else {
+            x--;
+        }
+        printMessage(false);
+        lastMoved = millis();
+    }
+
+    if (messageId == 0 && (messageChanged || millis() - lastMeasured >= 100)) {
+        disableScrolling = true;
+        int value = analogRead(A1);
+        float R1 = 47000.00;
+        float R2 = 22000.00;
+        float voltage = value * (5.0 / 1024) * ((R1 + R2) / R2);
+        memset(str, 0, 8);  // zeros out the string
+        sprintf_P(str, voltage_format, (voltage < 10.00 ? "0" : ""), (int) voltage, (int) (voltage * 100.0) % 100);
+        x = 2;
+        printMessage(true);
+        lastMeasured = millis();
+        messageChanged = false;
+    } else if (messageId == 1 && (messageChanged || millis() - lastMeasured >= 1000)) {
+        disableScrolling = true;
+        long time = millis(); // millis always returns the system up time
+        int days = (time / 86400000) % 9;
+        int hours = (time / 3600000) % 24;
+        int minutes = (time / 60000) % 60;
+        int seconds = (time / 1000) % 60;
+        memset(str, 0, sizeof(str));
+        sprintf_P(str, runtime_format, days, hours < 10 ? "0" : "", hours, minutes < 10 ? "0" : "", minutes, seconds < 10 ? "0" : "", seconds); // _P functions let us provide direct pointers to flash memory
+        x = 2;
+        printMessage(true);
+        lastMeasured = millis();
+        messageChanged = false;
+    } else {
+        disableScrolling = false;
+    }
+    // bool current5 = digitalRead(5) == HIGH;
+    // if (current5) {
+    //     Serial.print(1);
+    // } else {
+    //     Serial.print(0);
+    // }
+    // if (++zeroCount == 100) {
+    //     Serial.println();
+    //     zeroCount = 0;
+    // }
+
+    // // advance to the next message if function is toggled from the decoder
+    // if (current5 && !old5) {
+    //     // HIGH if F3 on decoder is off
+    //     old5 = true;
+    //     changeMessage();
+    //     Serial.println(zeroCount);
+    //     zeroCount = 0;
+    // } else if (!current5) {
+    //     // 1M pulls signal down properly
+    //     zeroCount++;
+    //     if (old5 && zeroCount > 2000) {
+    //         old5 = false;
+    //         changeMessage();
+    //     }
+    // }
 }
