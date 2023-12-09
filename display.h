@@ -1,10 +1,7 @@
 #ifndef display_h
 #define display_h
 
-#include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
-#include <SPI.h>
-#include <limits.h>
 
 #include "BitArray.h"
 
@@ -27,18 +24,16 @@ const int AMBER = 0x0CDF; // BGR?
 class Display {
     public:
         begin();
-        drawPixel(int x, int y, int color);
         shiftImage(int x);
         drawLine(int startX, int startY, int endX, int endY, int color);
         setCursor(int x, int y);
         setTextColor(int color);
         setTextSize(int size);
         printText(char* str);
-        fillRect(int startX, int startY, int endX, int endY, int color);
-        clearDestinationBoard();
         drawImage();
     private:
         drawRect(int startX, int startY, int endX, int endY, int color);
+        drawPixel(int x, int y, int color);
         
         static Adafruit_ST7735 display;
         static bool running;

@@ -1,6 +1,4 @@
 #include "map.h"
-#include "display.h"
-#include <stdarg.h>
 
 const char voltage[] PROGMEM = "";
 const char runtime[] PROGMEM = "";
@@ -18,7 +16,7 @@ const char voltage_format[] PROGMEM = "%s%d.%02dV";
 const char runtime_format[] PROGMEM = "%d:%s%d:%s%d:%s%d";
 
 bool scrolling = true;        // dictates whether the message inside the destination board scrolls
-bool disableScrolling = true; // if debugging with messageId != 1, then set this to false
+bool disableScrolling = false; // if debugging with messageId != 1, then set this to false
 bool messageChanged = true;   // initalized to true to let the message initially show up
 char str[21];                 // local copy of the string from flash
 int messageWidth = 0;         // width of the message in pixels
@@ -27,7 +25,7 @@ int y = 5;                    // top-left x coordinate of the message in the des
 struct Map char_map;
 long lastMoved = millis();    // used to keep track of the last time the message was scrolled across the screen
 long lastMeasured = millis(); // used to keep track of the last time status was queried (volts, amps, etc.)
-int messageId = 1;            // index of the message in destinations[] that is currently being displayed
+int messageId = 2;            // index of the message in destinations[] that is currently being displayed
 
 void setup() {
   Serial.begin(9600);
@@ -149,7 +147,7 @@ void loop() {
   //    zeroCount = 0;
   //  }
 
-  // advance to the next message if function is toggled from the decoder
+  // // advance to the next message if function is toggled from the decoder
   // if (current5 && !old5) {
   //   // HIGH if F3 on decoder is off
   //   old5 = true;

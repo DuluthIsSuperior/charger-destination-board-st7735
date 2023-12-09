@@ -1,5 +1,4 @@
 #include "display.h"
-#include <avr/pgmspace.h>
 
 Display display;
 
