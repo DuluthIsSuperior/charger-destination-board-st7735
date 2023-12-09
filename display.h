@@ -35,10 +35,11 @@ class Display {
         setTextSize(int size);
         printText(char* str);
         fillRect(int startX, int startY, int endX, int endY, int color);
-        drawRect(int startX, int startY, int endX, int endY, int color);
         clearDestinationBoard();
         drawImage();
     private:
+        drawRect(int startX, int startY, int endX, int endY, int color);
+        
         static Adafruit_ST7735 display;
         static bool running;
 };
